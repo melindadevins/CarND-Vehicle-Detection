@@ -4,6 +4,10 @@ The goal of this project is to write a software pipeline to detect vehicles in a
 (start with the test_video.mp4 and later implement on full project_video.mp4),
 but the main output or product is to create is a detailed writeup of the project.
 
+We learned HOG and SVM from Udacity self driving class. However, based on my study, I prefer to use deep learning
+neural network, because object detection for a self driving car has to be in real time, at least 30 FPS.
+HOG + SVM may be very disappointing. As I searched for algorithms, the prediction performance is the top criteria.
+
 ## A Brief Comparison of Object Detection Algorithms
 There are many algorithms in object detection. The following are a few popular ones and their comparison
 
@@ -13,11 +17,9 @@ There are many algorithms in object detection. The following are a few popular o
 feature extraction, and color transformation to train SVM (Surport Vector Machine) classifier using labeled images.
 Then applies sliding windows technique to track objects in a video.
 
-The problem with HOG + SVM approach, as with the traditional machine learning approach, is the performance.
-First the algorithm itself requires dividing an image into small patches, and each patch will be run through a classifier
-to determine whether there are objects in the patch. Second there is no supportive packages for traditional machine learning
-to utilize the power of GPU. Based on readings, the HOG + SVM approach can be difficult to reach the real time object detection
-performance that requires 30 frame per second.
+The problem with HOG + SVM approach, as with the traditional machine learning approach, is the performance, mainly
+because of the algorithm itself and the fact that it cannot utilize hte power of GPU.
+Based on my readings, the HOG + SVM approach only reaches a few frame per second.
 
 ### Fast R-CNN
 [Fast R-CNN](https://arxiv.org/pdf/1504.08083.pdf)
@@ -78,7 +80,7 @@ Tiny YOLO is based off of the [Darknet reference network](https://pjreddie.com/d
  to detect vehicle in the video of Udacity's self driving car project 5 based on my testing.
 Besides simplicity, another advantage of Tiny-YOLO is that it's extremely fast.
 
-### Architecture of CNN
+### Model Architecture
 
 The tiny YOLO v1 is consist of 9 convolution layers and 3 full connected layers.
 Each convolution layer consists of convolution, leaky relu and max pooling operations.
@@ -169,29 +171,57 @@ The project includes the following files:
 * ./README.md is the project writeup
 *./carnd-term1-p5.yaml is the conda enviroment file
 
-### Results
+### The Detection Threshold
+By default, Tiny-YOLO model only return boxes for detected objects with a confidence of .2 or higher.
+To change the threshold, pass a different value to get_detected_boxes(). I have tested with threshold of 0.15, 0.17, 0.2, 0.3.
+The higher the threshold, the less sensitive is the detection. At 0.15, there are many false positive in the video.
+At 0.3, it failed to detect the black car in te test images (as in the following), and in the video.
 
-The following shows the results for several test images with a threshold of 0.20. The cars in the images are detected:
+![Tiny-YOLO with threshold 0.3](./output_images/obj_detected_threshold_030.png)
 
-![png](./output_images/obj_detected_test_images.png)
 
-[Here](./project_video_output.mp4) is the result of applying the Tiny-YOLO pipeline to a video.
+The following shows the results for the test images with a default threshold of 0.20.
+The cars in the images are detected:
+
+![Tiny-YOLO with threshold 0.2](./output_images/obj_detected_test_images.png)
+
+### Video
+[Here](./project_video_output.mp4) is the result of applying the Tiny-YOLO pipeline to the project video,
+with the threshold of 0.18. It deteced vehicles in the video.
 
 ### Performance
 The following is the time took to process project_video.mp4 using Tiny-YOLO model using CPU.
 Anticipate much better performance with GPU.
 
-    Time: 2min 14s = 134 sec
+    Time: 2min 15s = 135 sec
     project_video.mp4: 25 frame/sec, 50 sec
     Total frame = 1250
 
     Performance: 9.3 FPS with CPU
 
+### Discussion
+After studied several object detection algorithms, I opted to implement Tiny-YOLO because it is reported
+to be fast, and quite accurate (is reported to work at nearly 200 FPS on a powerful desktop GPU).
+In addition, it's easy to implement.
+
+For future improvement, YOLO v2 seems worth explore. Faster R-CNN defintely deserve to be checked out.
+In addition, perhaps an ensemble method by selecting multiple models should perform well.
 
 
 Other References:
+1. Real-time object detection with YOLO  http://machinethink.net/blog/object-detection-with-yolo/
+2. YOLO: Real Time Object Detection https://github.com/pjreddie/darknet/wiki/YOLO:-Real-Time-Object-Detection
+3. Video Object Detection using Faster R-CNN https://andrewliao11.github.io/object_detection/faster_rcnn/b
+4. darkflow, https://github.com/thtrieu/darkflow
+5. Darknet.keras, https://github.com/sunshineatnoon/Darknet.keras/
+6. YAD2K, https://github.com/allanzelener/YAD2K
+7. Model comparison: https://medium.com/@phelixlau/speed-accuracy-trade-offs-for-modern-convolutional-object-detectors-bbad4e4e0718
+8. SVM vs. YOLO https://medium.com/@ksakmann/vehicle-detection-and-tracking-using-hog-features-svm-vs-yolo-73e1ccb35866
+9. Real time vehicle detection using YOLO https://medium.com/@xslittlegrass/almost-real-time-vehicle-detection-using-yolo-da0f016b43de
+10. Vehicle Detection for Autonomous Driving https://medium.com/@ksakmann/vehicle-detection-and-tracking-using-hog-features-svm-vs-yolo-73e1ccb35866
 
-https://andrewliao11.github.io/object_detection/faster_rcnn/b
+
+
 
 
 

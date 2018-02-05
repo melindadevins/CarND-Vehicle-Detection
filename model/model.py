@@ -2,6 +2,7 @@
 #YAD2K https://github.com/allanzelener/YAD2K
 #darkflow https://github.com/thtrieu/darkflow
 #Darknet.keras https://github.com/sunshineatnoon/Darknet.keras
+#Real time vehicle detection using YOLO https://github.com/xslittlegrass/CarND-Vehicle-Detection
 
 import numpy as np
 import cv2
@@ -73,37 +74,57 @@ class TinyYOLO:
                 index += np.prod(kshape)
                 layer.set_weights([ker, bia])
 
-
-
-    def overlap(self, x1, w1, x2, w2):
-        l1 = x1 - w1 / 2.;
-        l2 = x2 - w2 / 2.;
-        left = max(l1, l2)
-        r1 = x1 + w1 / 2.;
-        r2 = x2 + w2 / 2.;
-        right = min(r1, r2)
-        return right - left;
-
+    def box_union(self, a, b):
+        i = self.box_intersection(a, b)
+        u = a.w * a.h + b.w * b.h - i
+        return u
 
     def box_intersection(self, a, b):
-        w = self.overlap(a.x, a.w, b.x, b.w);
-        h = self.overlap(a.y, a.h, b.y, b.h);
+        w = self.overlap(a.x, a.w, b.x, b.w)
+        h = self.overlap(a.y, a.h, b.y, b.h)
         if w < 0 or h < 0: return 0;
-        area = w * h;
-        return area;
+        area = w * h
+        return area
 
-
-    def box_union(self, a, b):
-        i = self.box_intersection(a, b);
-        u = a.w * a.h + b.w * b.h - i;
-        return u;
+    def overlap(self, x1, w1, x2, w2):
+        l1 = x1 - w1 / 2.
+        l2 = x2 - w2 / 2.
+        left = max(l1, l2)
+        r1 = x1 + w1 / 2.
+        r2 = x2 + w2 / 2.
+        right = min(r1, r2)
+        return right - left
 
 
     def box_iou(self, a, b):
-        return self.box_intersection(a, b) / self.box_union(a, b);
+        return self.box_intersection(a, b) / self.box_union(a, b)
 
 
-    def yolo_net_out_to_car_boxes(self, net_out, threshold=0.2, sqrt=1.8, C=20, B=2, S=7):
+    def draw_box(self, boxes, im, crop_dim):
+        imgcv = im
+        [xmin, xmax] = crop_dim[0]
+        [ymin, ymax] = crop_dim[1]
+        for b in boxes:
+            h, w, _ = imgcv.shape
+            left = int((b.x - b.w / 2.) * w)
+            right = int((b.x + b.w / 2.) * w)
+            top = int((b.y - b.h / 2.) * h)
+            bot = int((b.y + b.h / 2.) * h)
+            left = int(left * (xmax - xmin) / w + xmin)
+            right = int(right * (xmax - xmin) / w + xmin)
+            top = int(top * (ymax - ymin) / h + ymin)
+            bot = int(bot * (ymax - ymin) / h + ymin)
+
+            if left < 0:  left = 0
+            if right > w - 1: right = w - 1
+            if top < 0:   top = 0
+            if bot > h - 1:   bot = h - 1
+            thick = int((h + w) // 150)
+            cv2.rectangle(imgcv, (left, top), (right, bot), (255, 0, 0), thick)
+
+        return imgcv
+
+    def get_detected_boxes(self, net_out, threshold=0.2, sqrt=1.8, C=20, B=2, S=7):
         class_num = 6
         boxes = []
         SS = S * S  # number of grid cells
@@ -144,27 +165,3 @@ class TinyYOLO:
 
         return boxes
 
-
-    def draw_box(self, boxes, im, crop_dim):
-        imgcv = im
-        [xmin, xmax] = crop_dim[0]
-        [ymin, ymax] = crop_dim[1]
-        for b in boxes:
-            h, w, _ = imgcv.shape
-            left = int((b.x - b.w / 2.) * w)
-            right = int((b.x + b.w / 2.) * w)
-            top = int((b.y - b.h / 2.) * h)
-            bot = int((b.y + b.h / 2.) * h)
-            left = int(left * (xmax - xmin) / w + xmin)
-            right = int(right * (xmax - xmin) / w + xmin)
-            top = int(top * (ymax - ymin) / h + ymin)
-            bot = int(bot * (ymax - ymin) / h + ymin)
-
-            if left < 0:  left = 0
-            if right > w - 1: right = w - 1
-            if top < 0:   top = 0
-            if bot > h - 1:   bot = h - 1
-            thick = int((h + w) // 150)
-            cv2.rectangle(imgcv, (left, top), (right, bot), (255, 0, 0), thick)
-
-        return imgcv
