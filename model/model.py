@@ -1,8 +1,3 @@
-# code based on:
-#YAD2K https://github.com/allanzelener/YAD2K
-#darkflow https://github.com/thtrieu/darkflow
-#Darknet.keras https://github.com/sunshineatnoon/Darknet.keras
-#Real time vehicle detection using YOLO https://github.com/xslittlegrass/CarND-Vehicle-Detection
 
 import numpy as np
 import cv2
@@ -21,11 +16,13 @@ class Box:
         self.prob = float()
 
 class TinyYOLO:
+    # must pass in a pre-trained weight file full path as yolo_weight_file_path, since this model use pre-trained weight to save training time
     def __init__(self, yolo_weight_file_path):
         self.yolo_weight_file = yolo_weight_file_path
         self.createModel()
         self.load_weights()
 
+    # Build Tiny-YOLO model
     def createModel(self):
         model = Sequential()
         model.add(Convolution2D(16, 3, 3, input_shape=(3, 448, 448), border_mode='same', subsample=(1, 1)))
@@ -59,6 +56,7 @@ class TinyYOLO:
         model.add(Dense(1470))
         self.model = model
 
+    # Use pre-trained weight for the model
     def load_weights(self):
         data = np.fromfile(self.yolo_weight_file, np.float32)
         data = data[4:]
@@ -124,6 +122,7 @@ class TinyYOLO:
 
         return imgcv
 
+    # return bounding boxes that contain object with probability higher than threshold
     def get_detected_boxes(self, net_out, threshold=0.2, sqrt=1.8, C=20, B=2, S=7):
         class_num = 6
         boxes = []

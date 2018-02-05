@@ -4,7 +4,7 @@ The goal of this project is to write a software pipeline to detect vehicles in a
 (start with the test_video.mp4 and later implement on full project_video.mp4),
 but the main output or product is to create is a detailed writeup of the project.
 
-We learned HOG and SVM from Udacity self driving class. However, based on my study, I prefer to use deep learning
+We learned HOG and SVM method from Udacity self driving class. However, based on my study, I prefer to use deep learning
 neural network, because object detection for a self driving car has to be in real time, at least 30 FPS.
 HOG + SVM seems slow. As I searched for an algorithm, the prediction performance is the top criteria.
 
@@ -220,8 +220,6 @@ Other References:
 8. SVM vs. YOLO https://medium.com/@ksakmann/vehicle-detection-and-tracking-using-hog-features-svm-vs-yolo-73e1ccb35866
 9. Real time vehicle detection using YOLO https://medium.com/@xslittlegrass/almost-real-time-vehicle-detection-using-yolo-da0f016b43de
 10. Vehicle Detection for Autonomous Driving https://medium.com/@ksakmann/vehicle-detection-and-tracking-using-hog-features-svm-vs-yolo-73e1ccb35866
-
-
 
 
 
